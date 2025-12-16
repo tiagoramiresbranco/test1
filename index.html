@@ -420,7 +420,7 @@
             uma linha do tempo do turno e do almoço.
           </p>
         </div>
-        <div class="pill" id="summary-pill" aria-live="polite"></div>
+        <div class="pill" id="summary-pill" aria-live="polite">Carregando…</div>
       </header>
 
       <main class="grid">
@@ -484,6 +484,11 @@
           </div>
 
           <div class="error" id="error" role="alert"></div>
+          <noscript>
+            <div class="error" style="display: block; margin-top: 10px">
+              Este aplicativo precisa de JavaScript habilitado para funcionar.
+            </div>
+          </noscript>
           <div class="hint">
             Dica: use <span class="kbd">Tab</span> para navegar pelos campos.
             Os dados ficam salvos no seu navegador (local).
@@ -507,7 +512,7 @@
                 </select>
               </label>
             </div>
-            <div class="pill" id="range-pill"></div>
+            <div class="pill" id="range-pill">Carregando…</div>
           </div>
 
           <table aria-label="Escala de agentes">
@@ -565,6 +570,27 @@
         empty: $("empty"),
       };
 
+      function fatal(err) {
+        try {
+          const message =
+            (err && err.message) ||
+            (typeof err === "string" ? err : "Erro desconhecido");
+          // Mostra o erro na tela para facilitar diagnóstico em previews/sandboxes
+          if (els.error) {
+            els.error.textContent = `Erro ao carregar o app: ${message}`;
+            els.error.style.display = "block";
+          }
+          // Também loga no console (se disponível)
+          // eslint-disable-next-line no-console
+          console.error(err);
+        } catch {
+          // ignore
+        }
+      }
+
+      window.addEventListener("error", (e) => fatal(e.error || e.message));
+      window.addEventListener("unhandledrejection", (e) => fatal(e.reason));
+
       /** @type {{id: string, name: string, role: 'telefone'|'chat'|'email', start: string, end: string, lunchStart: string, lunchEnd: string}[]} */
       let agents = [];
       /** @type {string|null} */
@@ -619,7 +645,17 @@
       }
 
       function save() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(agents));
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(agents));
+        } catch (e) {
+          // Em alguns previews/ambientes, localStorage pode estar bloqueado.
+          // Mantém o app funcionando e apenas avisa.
+          showError(
+            "Não foi possível salvar no navegador (localStorage bloqueado). O app continua funcionando nesta sessão."
+          );
+          // eslint-disable-next-line no-console
+          console.warn(e);
+        }
       }
 
       function getFormData() {
@@ -930,9 +966,13 @@
       }
 
       // Init
-      els.cancelEdit.style.display = "none";
-      load();
-      render();
+      try {
+        els.cancelEdit.style.display = "none";
+        load();
+        render();
+      } catch (e) {
+        fatal(e);
+      }
     </script>
   </body>
 </html>
