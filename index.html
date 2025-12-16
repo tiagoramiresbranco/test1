@@ -1,89 +1,938 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Playtech</title>
-      <style>
-        * {
-          box-sizing: border-box;
-          margin: 0;
-          padding: 0;
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visualização de Turnos e Escalas</title>
+    <style>
+      :root {
+        --bg: #0b1020;
+        --panel: rgba(255, 255, 255, 0.06);
+        --panel-2: rgba(255, 255, 255, 0.1);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.7);
+        --border: rgba(255, 255, 255, 0.14);
+        --danger: #ff5b5b;
+        --ok: #6cf0c2;
+        --brand: #6ea8ff;
+        --shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+        --radius: 14px;
+        --radius-sm: 10px;
+        --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+          Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(
+            1200px 900px at 10% 10%,
+            rgba(110, 168, 255, 0.25),
+            transparent 55%
+          ),
+          radial-gradient(
+            1100px 900px at 90% 20%,
+            rgba(108, 240, 194, 0.16),
+            transparent 55%
+          ),
+          radial-gradient(
+            900px 700px at 60% 120%,
+            rgba(255, 91, 91, 0.12),
+            transparent 60%
+          ),
+          var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 22px 16px 42px;
+      }
+
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.4rem;
+        letter-spacing: 0.2px;
+      }
+
+      .subtitle {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1.1fr 2fr;
+        gap: 14px;
+      }
+
+      @media (max-width: 980px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .form {
+        padding: 16px;
+      }
+
+      .form h2 {
+        margin: 0 0 10px;
+        font-size: 1.05rem;
+      }
+
+      .form .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 10px 0;
+      }
+
+      @media (max-width: 560px) {
+        .form .row {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      input,
+      select,
+      button {
+        font: inherit;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 10px 10px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text);
+        outline: none;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: rgba(110, 168, 255, 0.55);
+        box-shadow: 0 0 0 4px rgba(110, 168, 255, 0.12);
+      }
+
+      select option {
+        background: #0f1730;
+        color: var(--text);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      button {
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+        padding: 10px 12px;
+        cursor: pointer;
+        transition: transform 90ms ease, background 120ms ease,
+          border-color 120ms ease;
+      }
+
+      button:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+
+      .btn-primary {
+        border-color: rgba(110, 168, 255, 0.55);
+        background: rgba(110, 168, 255, 0.18);
+      }
+
+      .btn-primary:hover {
+        background: rgba(110, 168, 255, 0.24);
+      }
+
+      .btn-danger {
+        border-color: rgba(255, 91, 91, 0.55);
+        background: rgba(255, 91, 91, 0.14);
+      }
+
+      .btn-danger:hover {
+        background: rgba(255, 91, 91, 0.2);
+      }
+
+      .btn-ghost {
+        background: transparent;
+      }
+
+      .hint {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 0.88rem;
+        line-height: 1.25rem;
+      }
+
+      .error {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 91, 91, 0.4);
+        background: rgba(255, 91, 91, 0.12);
+        color: rgba(255, 255, 255, 0.92);
+        display: none;
+      }
+
+      .table-wrap {
+        padding: 16px;
+        overflow: auto;
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .toolbar .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .toolbar .filters > * {
+        min-width: 180px;
+      }
+
+      .pill {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--muted);
+        font-size: 0.9rem;
+        white-space: nowrap;
+      }
+
+      table {
+        width: 100%;
+        min-width: 980px;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+
+      thead th {
+        position: sticky;
+        top: 0;
+        background: rgba(15, 23, 48, 0.92);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        font-size: 0.86rem;
+        color: rgba(255, 255, 255, 0.8);
+        padding: 12px 10px;
+      }
+
+      tbody td {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 10px;
+        vertical-align: middle;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.92rem;
+      }
+
+      tbody tr:hover td {
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .name {
+        font-weight: 650;
+        letter-spacing: 0.1px;
+      }
+
+      .role-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.85rem;
+        text-transform: capitalize;
+      }
+
+      .role-telefone {
+        border-color: rgba(110, 168, 255, 0.5);
+        background: rgba(110, 168, 255, 0.12);
+      }
+
+      .role-chat {
+        border-color: rgba(108, 240, 194, 0.55);
+        background: rgba(108, 240, 194, 0.11);
+      }
+
+      .role-email {
+        border-color: rgba(255, 191, 99, 0.55);
+        background: rgba(255, 191, 99, 0.12);
+      }
+
+      .timeline {
+        position: relative;
+        height: 22px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .timeline::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: repeating-linear-gradient(
+          to right,
+          rgba(255, 255, 255, 0.08),
+          rgba(255, 255, 255, 0.08) 1px,
+          transparent 1px,
+          transparent
+            calc(
+              (100% / var(--hours)) * 1
+            ) /* 1h */
+        );
+        opacity: 0.45;
+        pointer-events: none;
+      }
+
+      .bar {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        border-radius: 999px;
+      }
+
+      .bar-shift {
+        background: linear-gradient(
+          90deg,
+          rgba(110, 168, 255, 0.65),
+          rgba(110, 168, 255, 0.35)
+        );
+        border: 1px solid rgba(110, 168, 255, 0.55);
+      }
+
+      .bar-lunch {
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        opacity: 0.8;
+      }
+
+      .bar-label {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+      }
+
+      .row-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .row-actions button {
+        padding: 8px 10px;
+        border-radius: 10px;
+      }
+
+      .empty {
+        padding: 18px 12px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .kbd {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+        font-size: 0.86em;
+        padding: 2px 6px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div>
+          <h1>Visualização de Turnos e Escalas</h1>
+          <p class="subtitle">
+            Cadastre agentes (nome, função e horários) e veja todos na tabela com
+            uma linha do tempo do turno e do almoço.
+          </p>
+        </div>
+        <div class="pill" id="summary-pill" aria-live="polite"></div>
+      </header>
+
+      <main class="grid">
+        <section class="panel form" aria-label="Cadastro de agente">
+          <h2 id="form-title">Adicionar agente</h2>
+
+          <div class="row">
+            <label>
+              Nome do agente
+              <input
+                id="name"
+                type="text"
+                placeholder="Ex.: Maria Silva"
+                autocomplete="off"
+                maxlength="60"
+              />
+            </label>
+
+            <label>
+              Função
+              <select id="role">
+                <option value="telefone">Telefone</option>
+                <option value="chat">Chat</option>
+                <option value="email">Email</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="row">
+            <label>
+              Entrada
+              <input id="start" type="time" />
+            </label>
+            <label>
+              Saída
+              <input id="end" type="time" />
+            </label>
+          </div>
+
+          <div class="row">
+            <label>
+              Início do almoço
+              <input id="lunchStart" type="time" />
+            </label>
+            <label>
+              Fim do almoço
+              <input id="lunchEnd" type="time" />
+            </label>
+          </div>
+
+          <div class="actions">
+            <button class="btn-primary" id="save" type="button">
+              Salvar
+            </button>
+            <button class="btn-ghost" id="cancelEdit" type="button">
+              Cancelar edição
+            </button>
+            <button class="btn-danger" id="clearAll" type="button">
+              Limpar tudo
+            </button>
+          </div>
+
+          <div class="error" id="error" role="alert"></div>
+          <div class="hint">
+            Dica: use <span class="kbd">Tab</span> para navegar pelos campos.
+            Os dados ficam salvos no seu navegador (local).
+          </div>
+        </section>
+
+        <section class="panel table-wrap" aria-label="Tabela de turnos">
+          <div class="toolbar">
+            <div class="filters">
+              <label style="min-width: 240px">
+                Buscar por nome
+                <input id="search" type="text" placeholder="Ex.: João" />
+              </label>
+              <label>
+                Filtrar por função
+                <select id="filterRole">
+                  <option value="">Todas</option>
+                  <option value="telefone">Telefone</option>
+                  <option value="chat">Chat</option>
+                  <option value="email">Email</option>
+                </select>
+              </label>
+            </div>
+            <div class="pill" id="range-pill"></div>
+          </div>
+
+          <table aria-label="Escala de agentes">
+            <thead>
+              <tr>
+                <th style="width: 220px">Agente</th>
+                <th style="width: 130px">Função</th>
+                <th style="width: 120px">Entrada</th>
+                <th style="width: 120px">Saída</th>
+                <th style="width: 180px">Almoço</th>
+                <th style="width: 140px">Carga (líquida)</th>
+                <th>Visual</th>
+                <th style="width: 150px">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+
+          <div class="empty" id="empty" style="display: none">
+            Nenhum agente cadastrado ainda. Preencha o formulário ao lado e
+            clique em <strong>Salvar</strong>.
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      /**
+       * Visualização de Turnos e Escalas (single-file)
+       * - Armazena dados no localStorage
+       * - Valida horários (mesmo dia, sem turno virando o dia)
+       * - Renderiza tabela + timeline do turno e almoço
+       */
+
+      const STORAGE_KEY = "turnos_escalas_v1";
+
+      const $ = (id) => document.getElementById(id);
+      const els = {
+        summaryPill: $("summary-pill"),
+        rangePill: $("range-pill"),
+        formTitle: $("form-title"),
+        name: $("name"),
+        role: $("role"),
+        start: $("start"),
+        end: $("end"),
+        lunchStart: $("lunchStart"),
+        lunchEnd: $("lunchEnd"),
+        save: $("save"),
+        cancelEdit: $("cancelEdit"),
+        clearAll: $("clearAll"),
+        error: $("error"),
+        search: $("search"),
+        filterRole: $("filterRole"),
+        tbody: $("tbody"),
+        empty: $("empty"),
+      };
+
+      /** @type {{id: string, name: string, role: 'telefone'|'chat'|'email', start: string, end: string, lunchStart: string, lunchEnd: string}[]} */
+      let agents = [];
+      /** @type {string|null} */
+      let editingId = null;
+
+      function uid() {
+        return (
+          "a_" +
+          Math.random().toString(16).slice(2) +
+          "_" +
+          Date.now().toString(16)
+        );
+      }
+
+      function parseTimeToMinutes(hhmm) {
+        // hh:mm -> minutes from 00:00
+        if (!hhmm || typeof hhmm !== "string") return null;
+        const [h, m] = hhmm.split(":").map((v) => Number(v));
+        if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+        if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+        return h * 60 + m;
+      }
+
+      function fmtMinutes(min) {
+        const h = Math.floor(min / 60);
+        const m = min % 60;
+        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+      }
+
+      function clamp(n, a, b) {
+        return Math.max(a, Math.min(b, n));
+      }
+
+      function showError(message) {
+        els.error.textContent = message;
+        els.error.style.display = "block";
+      }
+
+      function clearError() {
+        els.error.textContent = "";
+        els.error.style.display = "none";
+      }
+
+      function load() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          agents = raw ? JSON.parse(raw) : [];
+          if (!Array.isArray(agents)) agents = [];
+        } catch {
+          agents = [];
+        }
+      }
+
+      function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(agents));
+      }
+
+      function getFormData() {
+        return {
+          name: els.name.value.trim(),
+          role: els.role.value,
+          start: els.start.value,
+          end: els.end.value,
+          lunchStart: els.lunchStart.value,
+          lunchEnd: els.lunchEnd.value,
+        };
+      }
+
+      function validateAgent(a) {
+        if (!a.name) return "Informe o nome do agente.";
+        if (!a.role) return "Selecione a função do agente.";
+
+        const startMin = parseTimeToMinutes(a.start);
+        const endMin = parseTimeToMinutes(a.end);
+        const lsMin = parseTimeToMinutes(a.lunchStart);
+        const leMin = parseTimeToMinutes(a.lunchEnd);
+
+        if (startMin == null) return "Informe o horário de entrada.";
+        if (endMin == null) return "Informe o horário de saída.";
+        if (endMin <= startMin)
+          return "A saída deve ser depois da entrada (turnos virando o dia não são suportados).";
+
+        // Almoço é opcional, mas se começar, precisa terminar
+        const hasLunch = a.lunchStart || a.lunchEnd;
+        if (hasLunch) {
+          if (lsMin == null) return "Informe o início do almoço.";
+          if (leMin == null) return "Informe o fim do almoço.";
+          if (leMin <= lsMin) return "O fim do almoço deve ser depois do início.";
+          if (lsMin < startMin || leMin > endMin)
+            return "O almoço deve ficar dentro do turno (entre entrada e saída).";
+          if (leMin - lsMin < 10) return "O almoço deve ter pelo menos 10 minutos.";
         }
 
-        body {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 1.5rem;
-          min-height: 100vh;
-          background-color: #fff;
-          color: #000;
-          font-family: Arial, Helvetica, sans-serif;
-          font-size: 3rem;
+        return null;
+      }
+
+      function resetForm() {
+        editingId = null;
+        els.formTitle.textContent = "Adicionar agente";
+        els.save.textContent = "Salvar";
+        els.cancelEdit.style.display = "none";
+        els.name.value = "";
+        els.role.value = "telefone";
+        els.start.value = "";
+        els.end.value = "";
+        els.lunchStart.value = "";
+        els.lunchEnd.value = "";
+        clearError();
+      }
+
+      function setEditMode(agent) {
+        editingId = agent.id;
+        els.formTitle.textContent = "Editar agente";
+        els.save.textContent = "Salvar alterações";
+        els.cancelEdit.style.display = "inline-flex";
+        els.name.value = agent.name;
+        els.role.value = agent.role;
+        els.start.value = agent.start;
+        els.end.value = agent.end;
+        els.lunchStart.value = agent.lunchStart || "";
+        els.lunchEnd.value = agent.lunchEnd || "";
+        clearError();
+        els.name.focus();
+      }
+
+      function computeRangeMinutes(list) {
+        // Range da timeline baseado nos horários existentes (com folga)
+        if (!list.length) {
+          // padrão: 06:00-22:00
+          return { min: 6 * 60, max: 22 * 60 };
+        }
+        const starts = list
+          .map((a) => parseTimeToMinutes(a.start))
+          .filter((v) => v != null);
+        const ends = list
+          .map((a) => parseTimeToMinutes(a.end))
+          .filter((v) => v != null);
+        let min = Math.min(...starts);
+        let max = Math.max(...ends);
+        min = clamp(min - 30, 0, 24 * 60);
+        max = clamp(max + 30, 0, 24 * 60);
+        // garante pelo menos 8h de janela visual
+        if (max - min < 8 * 60) {
+          const center = Math.round((min + max) / 2);
+          min = clamp(center - 4 * 60, 0, 24 * 60);
+          max = clamp(center + 4 * 60, 0, 24 * 60);
+        }
+        return { min, max };
+      }
+
+      function minutesToPercent(min, range) {
+        const span = range.max - range.min || 1;
+        return ((min - range.min) / span) * 100;
+      }
+
+      function netWorkMinutes(a) {
+        const startMin = parseTimeToMinutes(a.start);
+        const endMin = parseTimeToMinutes(a.end);
+        const lsMin = parseTimeToMinutes(a.lunchStart);
+        const leMin = parseTimeToMinutes(a.lunchEnd);
+        if (startMin == null || endMin == null) return null;
+        let total = endMin - startMin;
+        if (lsMin != null && leMin != null) total -= leMin - lsMin;
+        return total;
+      }
+
+      function fmtDuration(mins) {
+        if (mins == null) return "-";
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        return `${h}h${String(m).padStart(2, "0")}`;
+      }
+
+      function matchesFilters(a) {
+        const q = els.search.value.trim().toLowerCase();
+        const role = els.filterRole.value;
+        if (q && !a.name.toLowerCase().includes(q)) return false;
+        if (role && a.role !== role) return false;
+        return true;
+      }
+
+      function render() {
+        const list = agents.filter(matchesFilters);
+        const range = computeRangeMinutes(list.length ? list : agents);
+        const hours = Math.max(1, Math.round((range.max - range.min) / 60));
+
+        els.rangePill.textContent = `Janela: ${fmtMinutes(range.min)}–${fmtMinutes(
+          range.max
+        )} (${hours}h)`;
+
+        const totalAgents = agents.length;
+        const visibleAgents = list.length;
+        els.summaryPill.textContent =
+          totalAgents === visibleAgents
+            ? `${totalAgents} agente(s)`
+            : `${visibleAgents}/${totalAgents} agente(s) visíveis`;
+
+        els.tbody.innerHTML = "";
+        els.empty.style.display = agents.length ? "none" : "block";
+
+        if (!list.length && agents.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 8;
+          td.className = "empty";
+          td.textContent =
+            "Nenhum agente corresponde aos filtros atuais (busca/função).";
+          tr.appendChild(td);
+          els.tbody.appendChild(tr);
+          return;
         }
 
-        h1 {
-          font-size: 3rem;
-        }
+        for (const a of list) {
+          const tr = document.createElement("tr");
 
-        .input-group {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-size: 1rem;
-        }
+          const startMin = parseTimeToMinutes(a.start);
+          const endMin = parseTimeToMinutes(a.end);
+          const lsMin = parseTimeToMinutes(a.lunchStart);
+          const leMin = parseTimeToMinutes(a.lunchEnd);
 
-        .input-group input {
-          padding: 0.6rem 0.8rem;
-          font-size: 1rem;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-        }
+          const tdName = document.createElement("td");
+          tdName.innerHTML = `<span class="name"></span>`;
+          tdName.querySelector(".name").textContent = a.name;
 
-        .input-group button {
-          padding: 0.6rem 1rem;
-          font-size: 1rem;
-          border: none;
-          border-radius: 4px;
-          background-color: #0066ff;
-          color: #fff;
-          cursor: pointer;
-        }
+          const tdRole = document.createElement("td");
+          const roleBadge = document.createElement("span");
+          roleBadge.className = `role-badge role-${a.role}`;
+          roleBadge.textContent = a.role;
+          tdRole.appendChild(roleBadge);
 
-        .input-group button:hover {
-          background-color: #004dd1;
-        }
-      </style>
-    </head>
-    <body>
-      <h1>Playtech</h1>
-      <div class="input-group">
-        <input
-          id="valor"
-          type="number"
-          inputmode="numeric"
-          placeholder="Digite um número"
-          aria-label="Digite um número"
-        />
-        <button type="button" id="submit-button">Submeter</button>
-      </div>
+          const tdStart = document.createElement("td");
+          tdStart.textContent = a.start || "-";
+          const tdEnd = document.createElement("td");
+          tdEnd.textContent = a.end || "-";
 
-      <script>
-        const input = document.getElementById('valor');
-        const button = document.getElementById('submit-button');
+          const tdLunch = document.createElement("td");
+          tdLunch.textContent =
+            a.lunchStart && a.lunchEnd
+              ? `${a.lunchStart}–${a.lunchEnd}`
+              : "-";
 
-        button.addEventListener('click', () => {
-          const valor = input.value.trim();
+          const tdNet = document.createElement("td");
+          tdNet.textContent = fmtDuration(netWorkMinutes(a));
 
-          if (!valor) {
-            alert('Digite um número antes de submeter.');
-            return;
+          const tdVisual = document.createElement("td");
+          const timeline = document.createElement("div");
+          timeline.className = "timeline";
+          timeline.style.setProperty("--hours", String(hours));
+
+          // Shift bar
+          if (startMin != null && endMin != null) {
+            const left = minutesToPercent(startMin, range);
+            const right = minutesToPercent(endMin, range);
+            const w = clamp(right - left, 0, 100);
+            const shift = document.createElement("div");
+            shift.className = "bar bar-shift";
+            shift.style.left = `${clamp(left, 0, 100)}%`;
+            shift.style.width = `${w}%`;
+            timeline.appendChild(shift);
+
+            const label = document.createElement("div");
+            label.className = "bar-label";
+            label.textContent = `${a.start}–${a.end}`;
+            timeline.appendChild(label);
           }
 
-          alert(`você escreveu ${valor}`);
+          // Lunch bar (overlay)
+          if (lsMin != null && leMin != null) {
+            const left = minutesToPercent(lsMin, range);
+            const right = minutesToPercent(leMin, range);
+            const w = clamp(right - left, 0, 100);
+            const lunch = document.createElement("div");
+            lunch.className = "bar bar-lunch";
+            lunch.style.left = `${clamp(left, 0, 100)}%`;
+            lunch.style.width = `${w}%`;
+            lunch.title = `Almoço: ${a.lunchStart}–${a.lunchEnd}`;
+            timeline.appendChild(lunch);
+          }
+
+          tdVisual.appendChild(timeline);
+
+          const tdActions = document.createElement("td");
+          const wrap = document.createElement("div");
+          wrap.className = "row-actions";
+
+          const btnEdit = document.createElement("button");
+          btnEdit.type = "button";
+          btnEdit.textContent = "Editar";
+          btnEdit.addEventListener("click", () => setEditMode(a));
+
+          const btnDel = document.createElement("button");
+          btnDel.type = "button";
+          btnDel.className = "btn-danger";
+          btnDel.textContent = "Remover";
+          btnDel.addEventListener("click", () => {
+            const ok = confirm(`Remover o agente "${a.name}"?`);
+            if (!ok) return;
+            agents = agents.filter((x) => x.id !== a.id);
+            if (editingId === a.id) resetForm();
+            save();
+            render();
+          });
+
+          wrap.appendChild(btnEdit);
+          wrap.appendChild(btnDel);
+          tdActions.appendChild(wrap);
+
+          tr.appendChild(tdName);
+          tr.appendChild(tdRole);
+          tr.appendChild(tdStart);
+          tr.appendChild(tdEnd);
+          tr.appendChild(tdLunch);
+          tr.appendChild(tdNet);
+          tr.appendChild(tdVisual);
+          tr.appendChild(tdActions);
+
+          els.tbody.appendChild(tr);
+        }
+      }
+
+      function upsertAgent() {
+        clearError();
+        const data = getFormData();
+        const err = validateAgent(data);
+        if (err) {
+          showError(err);
+          return;
+        }
+
+        if (editingId) {
+          const idx = agents.findIndex((a) => a.id === editingId);
+          if (idx >= 0) {
+            agents[idx] = { ...agents[idx], ...data };
+          }
+        } else {
+          agents.unshift({ id: uid(), ...data });
+        }
+
+        save();
+        resetForm();
+        render();
+      }
+
+      // Wire events
+      els.save.addEventListener("click", upsertAgent);
+      els.cancelEdit.addEventListener("click", resetForm);
+      els.clearAll.addEventListener("click", () => {
+        const ok = confirm("Isso vai remover todos os agentes. Continuar?");
+        if (!ok) return;
+        agents = [];
+        resetForm();
+        save();
+        render();
+      });
+      els.search.addEventListener("input", render);
+      els.filterRole.addEventListener("change", render);
+
+      // Enter para salvar quando estiver no formulário
+      for (const id of ["name", "start", "end", "lunchStart", "lunchEnd"]) {
+        $(id).addEventListener("keydown", (e) => {
+          if (e.key === "Enter") upsertAgent();
         });
-      </script>
-    </body>
-  </html>
+      }
+
+      // Init
+      els.cancelEdit.style.display = "none";
+      load();
+      render();
+    </script>
+  </body>
+</html>
